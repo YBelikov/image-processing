@@ -10,22 +10,28 @@
 
 #include <cstdint>
 #include <vector>
+#include "Pixel.hpp"
 
 namespace imp_io {
 
-struct ImageData {
-  int width = 0;
-  int height = 0;
-  int channels = 4; // RGBA
-
-  std::vector<uint8_t> pixels;
-
-  bool empty() const noexcept { return pixels.empty(); }
-
-  std::size_t stride() const noexcept {
-    return static_cast<std::size_t>(width) * channels;
-  }
+template<typename T>
+struct _ImageData {
+    int width = 0;
+    int height = 0;
+    int channels = 3; // RGB
+    std::vector<float> pixels;
+    bool empty() const noexcept { return pixels.empty(); }
+    std::size_t stride() const noexcept {
+        return static_cast<std::size_t>(width) * channels;
+    }
+    _ImageData() = default;
+    _ImageData(int _width, int _height, int _channels) : width{_width}, height{_height}, channels{_channels} {
+        pixels.resize(width * height * channels);
+    }
+    
 };
+
+using ImageData = _ImageData<float>;
 
 } // namespace imp_io
 

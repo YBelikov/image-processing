@@ -18,9 +18,9 @@ std::optional<ImageData> ImageReader::read(std::string_view path) const {
   std::string pathStr(path);
 
   int width = 0, height = 0, channelsInFile = 0;
-  constexpr int desiredChannels = 4; // always request RGBA
+  constexpr int desiredChannels = 3; // always request RGBA
 
-  unsigned char *data = stbi_load(pathStr.c_str(), &width, &height,
+  float *data = stbi_loadf(pathStr.c_str(), &width, &height,
                                   &channelsInFile, desiredChannels);
 
   if (!data) {

@@ -36,5 +36,7 @@ conan install "${CONAN_COMMON_ARGS[@]}" -s build_type=Debug
 # ─────────────────────────────────────────────
 echo "Generating Xcode project..."
 cmake "$SCRIPT_DIR" \
-    -G Xcode \
-    -DCMAKE_TOOLCHAIN_FILE="$(pwd)/conan_toolchain.cmake"
+    -G "Xcode" \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_TOOLCHAIN_FILE="$(pwd)/conan_toolchain.cmake" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=1
