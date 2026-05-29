@@ -3,23 +3,25 @@
 set(IMP_IO_HEADERS
     imp_io/ImageData.hpp
     imp_io/ImageReader.hpp
-    imp_io/ImageWriter.hpp)
+    imp_io/ImageWriter.hpp
+    imp_io/Pixel.hpp)
 
 set(IMP_IO_SOURCES
-    src/stb_impl.cpp
-    src/ImageReader.cpp
-    src/ImageWriter.cpp)
+    src/stb_impl.cpp)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${IMP_IO_HEADERS} ${IMP_IO_SOURCES})
 
 add_library(imp_io SHARED ${IMP_IO_HEADERS} ${IMP_IO_SOURCES})
 
 # Public include: consumers use #include "imp_io/ImageReader.hpp"
-target_include_directories(imp_io PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-# stb (header-only) — needed internally for the implementation
 find_package(stb REQUIRED)
-target_link_libraries(imp_io PRIVATE stb::stb)
+target_include_directories(imp_io PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${stb_INCLUDE_DIRS}
+)
+
+# stb is used by templated public headers, so consumers need its usage requirements.
+target_link_libraries(imp_io PUBLIC stb::stb)
 
 set_target_properties(imp_io PROPERTIES
     XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++20"

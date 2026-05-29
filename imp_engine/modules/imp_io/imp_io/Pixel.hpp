@@ -8,10 +8,85 @@
 #ifndef Pixel_hpp
 #define Pixel_hpp
 
-template<typename T>
-struct _PixelRGB {
+namespace imp_io {
+
+template <typename T>
+struct _PixelRGBA {
     T r, g, b, a;
 };
 
-using Pixel = _PixelRGB<float>;
+template <typename T>
+struct _PixelRGB {
+    T r, g, b;
+};
+
+using PixelRGB_F = _PixelRGB<float>;
+using PixelRGBA_F = _PixelRGBA<float>;
+
+
+template<typename T>
+struct PixelChannels;
+
+template<>
+struct PixelChannels<PixelRGB_F> {
+    static constexpr int value = 3;
+};
+
+template<>
+struct PixelChannels<PixelRGBA_F> {
+    static constexpr int value = 4;
+};
+
+inline PixelRGB_F& operator /= (PixelRGB_F& lhs, float rhs) {
+    lhs.r /= rhs;
+    lhs.g /= rhs;
+    lhs.b /= rhs;
+    return lhs;
+}
+
+inline PixelRGB_F operator / (const PixelRGB_F& lhs, float rhs) {
+    return { lhs.r / rhs, lhs.g / rhs, lhs.b / rhs };
+}
+
+inline PixelRGB_F operator + (const PixelRGB_F& lhs, const PixelRGB_F& rhs) {
+    return {lhs.r + rhs.r, lhs.g + lhs.g, lhs.b + lhs.b};
+}
+
+template<typename U>
+inline PixelRGB_F operator + (const PixelRGB_F& lhs, U val) {
+    return { lhs.r + val, lhs.g + val, lhs.b + val };
+}
+
+template<typename U>
+inline PixelRGB_F operator * (const PixelRGB_F& lhs, U val) {
+    return { lhs.r * val, lhs.g * val, lhs.b * val };
+}
+
+inline PixelRGBA_F& operator /= (PixelRGBA_F& lhs, float rhs) {
+    lhs.r /= rhs;
+    lhs.g /= rhs;
+    lhs.b /= rhs;
+    lhs.a /= rhs;
+    return lhs;
+}
+
+inline PixelRGBA_F operator / (const PixelRGBA_F& lhs, float rhs) {
+    return { lhs.r / rhs, lhs.g / rhs, lhs.b / rhs, lhs.a / rhs };
+}
+
+inline PixelRGBA_F operator + (const PixelRGBA_F& lhs, const PixelRGBA_F& rhs) {
+    return {lhs.r + rhs.r, lhs.g + rhs.g, lhs.b + rhs.b, lhs.a + rhs.a};
+}
+
+template<typename U>
+inline PixelRGBA_F operator + (const PixelRGBA_F& lhs, U val) {
+    return { lhs.r + val, lhs.g + val, lhs.b + val, lhs.a + val };
+}
+
+template<typename U>
+inline PixelRGBA_F operator * (const PixelRGBA_F& lhs, U val) {
+    return { lhs.r * val, lhs.g * val, lhs.b * val, lhs.a * val };
+}
+
+} // namespace imp_io
 #endif /* Pixel_hpp */

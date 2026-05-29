@@ -18,7 +18,6 @@ add_subdirectory(modules/imp_io)
 # ── Main executable ──────────────────────────
 add_executable(imp_engine
     src/main.cpp
-    src/ImageProcessor.cpp
 )
 
 target_include_directories(imp_engine PRIVATE
