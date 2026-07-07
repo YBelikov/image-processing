@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     if (!overlayData.has_value() || !baseData.has_value()) {
         return 1;
     }
-    auto result = processor.blendLayers(baseData.value(), overlayData.value());
+    auto result = processor.composeLayers(baseData.value(), overlayData.value());
     imp_io::ImageWriter<PixelRGB_F> writer;
     bool writeStatus = writer.write(result, outputPath);
     std::cout << "Done." << std::boolalpha << writeStatus << std::endl;

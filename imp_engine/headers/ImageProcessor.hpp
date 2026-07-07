@@ -54,8 +54,8 @@ class ImageProcessor {
       return success;
     }
 
-    imp_io::ImageData<PixelType> blendLayers(const imp_io::ImageData<PixelType> &bottom,
-                                             const imp_io::ImageData<PixelType> &top) {
+    imp_io::ImageData<PixelType> composeLayers(const imp_io::ImageData<PixelType> &bottom,
+                                               const imp_io::ImageData<PixelType> &top) {
         return {};
     }
 

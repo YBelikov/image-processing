@@ -1,5 +1,5 @@
-#ifndef Blend_hpp
-#define Blend_hpp
+#ifndef Composition_hpp
+#define Composition_hpp
 
 #include "imp_io/ImageData.hpp"
 
@@ -9,17 +9,23 @@
 
 namespace imp_algorithms {
 
-enum class BlendMode {
-    Over,
-    Normal,
-    Add,
-    Multiply,
-    Screen,
-    Difference
+enum class PorterDuffOperator {
+    Clear,
+    Copy,
+    Destination,
+    SourceOver,
+    DestinationOver,
+    SourceIn,
+    DestinationIn,
+    SourceOut,
+    DestinationOut,
+    SourceAtop,
+    DestinationAtop,
+    Xor
 };
 
-imp_io::ImageDataRGBA blendImages(const imp_io::ImageDataRGBA& src, const imp_io::ImageDataRGBA& dst);
+imp_io::ImageDataRGBA composeImages(const imp_io::ImageDataRGBA& src, const imp_io::ImageDataRGBA& dst);
 
 } // namespace imp_algorithms
 
-#endif /* Blend_hpp */
+#endif /* Composition_hpp */
