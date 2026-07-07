@@ -8,9 +8,11 @@
 #ifndef ImageData_hpp
 #define ImageData_hpp
 
+#include "Pixel.hpp"
+
+#include <cstddef>
 #include <cstdint>
 #include <vector>
-#include "Pixel.hpp"
 
 namespace imp_io {
 
@@ -22,9 +24,10 @@ public:
     std::size_t stride() const noexcept {
         return static_cast<std::size_t>(width) * channels;
     }
+    int area() const noexcept { return width * height; }
     ImageData() = default;
     ImageData(int _width, int _height) : width{_width}, height{_height}, channels{PixelChannels<T>::value} {
-        pixels.resize(width * height * channels);
+        pixels.resize(static_cast<std::size_t>(width) * height);
     }
     
 // data

@@ -32,14 +32,11 @@ template <typename PixelType> class ImageWriter {
         std::string pathStr(path);
         std::string ext = getExtension(path);
         std::vector<float> flat;
-        flat.reserve(static_cast<std::size_t>(image.width) * image.height * 3);
+        flat.reserve(static_cast<std::size_t>(image.width) * image.height * image.channels);
 
         for (const auto& p : image.pixels) {
-            flat.push_back(p.r);
-            flat.push_back(p.g);
-            flat.push_back(p.b);
+            appendInterleaved(flat, p);
         }
-        int stride = static_cast<int>(image.stride());
         if (ext == ".hdr") {
             return stbi_write_hdr(pathStr.c_str(), image.width, image.height,
                                   image.channels, flat.data());

@@ -11,6 +11,7 @@
 #include "imp_io/ImageData.hpp"
 #include "imp_io/ImageWriter.hpp"
 #include "imp_io/ImageReader.hpp"
+#include "imp_algorithms/Composition.hpp"
 
 #include <string_view>
 #include <iostream>
@@ -55,7 +56,7 @@ class ImageProcessor {
 
     imp_io::ImageData<PixelType> blendLayers(const imp_io::ImageData<PixelType> &bottom,
                                              const imp_io::ImageData<PixelType> &top) {
-        return imp_io::ImageData<PixelType>();
+        return {};
     }
 
   private:
