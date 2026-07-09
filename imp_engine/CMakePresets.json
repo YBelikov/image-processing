@@ -1,0 +1,101 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "ninja-arm64-debug",
+            "displayName": "Ninja arm64 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_ninja/arm64-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build_ninja/arm64-debug/conan_toolchain.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "ninja-arm64-release",
+            "displayName": "Ninja arm64 Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_ninja/arm64-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build_ninja/arm64-release/conan_toolchain.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "ninja-x86_64-debug",
+            "displayName": "Ninja x86_64 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_ninja/x86_64-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_OSX_ARCHITECTURES": "x86_64",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build_ninja/x86_64-debug/conan_toolchain.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "ninja-x86_64-release",
+            "displayName": "Ninja x86_64 Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_ninja/x86_64-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_OSX_ARCHITECTURES": "x86_64",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build_ninja/x86_64-release/conan_toolchain.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "ninja-arm64-debug",
+            "configurePreset": "ninja-arm64-debug"
+        },
+        {
+            "name": "ninja-arm64-release",
+            "configurePreset": "ninja-arm64-release"
+        },
+        {
+            "name": "ninja-x86_64-debug",
+            "configurePreset": "ninja-x86_64-debug"
+        },
+        {
+            "name": "ninja-x86_64-release",
+            "configurePreset": "ninja-x86_64-release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "ninja-arm64-debug",
+            "configurePreset": "ninja-arm64-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "ninja-arm64-release",
+            "configurePreset": "ninja-arm64-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "ninja-x86_64-debug",
+            "configurePreset": "ninja-x86_64-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "ninja-x86_64-release",
+            "configurePreset": "ninja-x86_64-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

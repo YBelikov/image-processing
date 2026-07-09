@@ -1,6 +1,7 @@
 .DS_Store
 GEMINI.md
 */build_xcode
+*/build_ninja
 __pycache__/
 *.py[cod]
 .pytest_cache/

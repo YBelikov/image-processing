@@ -9,6 +9,31 @@ The current engine lives in `imp_engine/` and is organized around small modules:
 - `imp_geometry`: points and affine transformations.
 - `imp_algorithms`: future home for reusable algorithms.
 
+## Building
+
+The engine uses CMake, Conan, and Ninja. From `imp_engine/`:
+
+```sh
+./configure_arm64.sh Debug
+cmake --build --preset ninja-arm64-debug
+ctest --preset ninja-arm64-debug
+```
+
+For macOS universal artifacts:
+
+```sh
+./build_universal_ninja.sh Debug
+```
+
+To rebuild and merge one universal target:
+
+```sh
+./build_universal_ninja.sh Debug imp_io
+```
+
+The merged `arm64`/`x86_64` outputs are written under
+`imp_engine/build_ninja/universal-debug/`.
+
 ## Research Track
 
 Start here:
@@ -29,4 +54,3 @@ library with:
 
 That gives every future idea a baseline for correctness, speed, and image
 quality.
-
