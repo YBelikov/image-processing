@@ -1,42 +1,40 @@
 #!/bin/bash
-set -e  # Exit on any error
+set -euo pipefail
 
 # ─────────────────────────────────────────────
 # Configuration
 # ─────────────────────────────────────────────
-BUILD_DIR="build_xcode"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILD_TYPE="${1:-Debug}"
+BUILD_TYPE_LOWER="$(printf '%s' "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
+BUILD_DIR="${SCRIPT_DIR}/build_ninja/arm64-${BUILD_TYPE_LOWER}"
+PRESET="ninja-arm64-${BUILD_TYPE_LOWER}"
+
+case "${BUILD_TYPE}" in
+    Debug|Release) ;;
+    *)
+        echo "Usage: $0 [Debug|Release]" >&2
+        exit 2
+        ;;
+esac
 
 # ─────────────────────────────────────────────
-# Clean & prepare build directory
+# Prepare build directory
 # ─────────────────────────────────────────────
-echo "🧹 Cleaning build directory..."
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR"
-cd "$BUILD_DIR"
+mkdir -p "${BUILD_DIR}"
 
 # ─────────────────────────────────────────────
-# Conan install — Release & Debug
+# Conan install
 # ─────────────────────────────────────────────
-CONAN_COMMON_ARGS=(
-    "$SCRIPT_DIR"
-    --output-folder=.
-    --build=missing
-    -s compiler.libcxx=libc++
-)
-
-echo "Installing Conan dependencies (Release)..."
-conan install "${CONAN_COMMON_ARGS[@]}" -s build_type=Release
-
-echo "Installing Conan dependencies (Debug)..."
-conan install "${CONAN_COMMON_ARGS[@]}" -s build_type=Debug
+conan install "${SCRIPT_DIR}" \
+    --output-folder="${BUILD_DIR}" \
+    --build=missing \
+    -s arch=armv8 \
+    -s build_type="${BUILD_TYPE}" \
+    -s compiler.libcxx=libc++ \
+    -c tools.cmake.cmaketoolchain:generator=Ninja
 
 # ─────────────────────────────────────────────
-# Generate Xcode project
+# Generate Ninja build files
 # ─────────────────────────────────────────────
-echo "Generating Xcode project..."
-cmake "$SCRIPT_DIR" \
-    -G "Xcode" \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_TOOLCHAIN_FILE="$(pwd)/conan_toolchain.cmake" \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+cmake --preset "${PRESET}"
