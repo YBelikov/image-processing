@@ -14,13 +14,9 @@ enum class PorterDuffOperator {
     Copy,
     Destination,
     SourceOver,
-    DestinationOver,
     SourceIn,
-    DestinationIn,
     SourceOut,
-    DestinationOut,
     SourceAtop,
-    DestinationAtop,
     Xor
 };
 
