@@ -1,12 +1,18 @@
 # ── imp_io ── dynamic library ─────────────────────────────────
 
 set(IMP_IO_HEADERS
+    imp_io/CodecResult.hpp
+    imp_io/DecodedImage.hpp
+    imp_io/ImageCodec.hpp
     imp_io/ImageData.hpp
+    imp_io/ImageMetadata.hpp
     imp_io/ImageReader.hpp
     imp_io/ImageWriter.hpp
     imp_io/Pixel.hpp)
 
 set(IMP_IO_SOURCES
+    src/DecodedImage.cpp
+    src/ImageCodec.cpp
     src/stb_impl.cpp)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${IMP_IO_HEADERS} ${IMP_IO_SOURCES})
@@ -26,7 +32,10 @@ target_link_libraries(imp_io PUBLIC stb::stb)
 
 # ── Tests ─────────────────────────────────────
 
-add_executable(unit_tests_imp_io tests/test_imp_io.cpp)
+add_executable(unit_tests_imp_io
+    tests/test_imp_io.cpp
+    tests/test_decoded_image.cpp
+    tests/test_image_codec.cpp)
 target_link_libraries(unit_tests_imp_io PRIVATE imp_io GTest::gtest GTest::gtest_main)
 
 include(GoogleTest)

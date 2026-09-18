@@ -41,11 +41,9 @@ template <typename PixelType> class ImageWriter {
             return stbi_write_hdr(pathStr.c_str(), image.width, image.height,
                                   image.channels, flat.data());
         }
-        // Unsupported format
         return false;
     }
-    
-    /// Extract lowercase file extension from path (e.g. ".png")
+
     std::string getExtension(std::string_view path) const {
         auto dot = path.rfind('.');
         if (dot == std::string_view::npos) {

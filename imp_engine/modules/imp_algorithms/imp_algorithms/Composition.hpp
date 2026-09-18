@@ -20,7 +20,8 @@ enum class PorterDuffOperator {
     Xor
 };
 
-imp_io::ImageDataRGBA composeImages(const imp_io::ImageDataRGBA& src, const imp_io::ImageDataRGBA& dst);
+imp_io::ImageDataRGBA composeImages(const imp_io::ImageDataRGBA& src, const imp_io::ImageDataRGBA& dst,
+                                  PorterDuffOperator compositionOperator);
 
 } // namespace imp_algorithms
 

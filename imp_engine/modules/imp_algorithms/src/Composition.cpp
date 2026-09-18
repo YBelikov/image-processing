@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include <cassert>
+#include <algorithm>
 #include "imp_algorithms/Composition.hpp"
 
 namespace imp_algorithms {
@@ -88,11 +88,15 @@ PixelRGBA_F composePixels(const PixelRGBA_F& src, const PixelRGBA_F& dst, Porter
         }
 }
 
-ImageDataRGBA composeImages(const ImageDataRGBA& src, const ImageDataRGBA& dst) {
-    assert(src.width == dst.width && src.height == dst.height);
-    ImageDataRGBA res(src.width, src.height);
-    for (int i = 0; i < src.area(); ++i) {
-        res.pixels[i] = composePixels(src.pixels[i], dst.pixels[i], PorterDuffOperator::SourceOver);
+ImageDataRGBA composeImages(const ImageDataRGBA& src, const ImageDataRGBA& dst,
+                           PorterDuffOperator compositionOperator) {
+    ImageDataRGBA res(std::min(src.width, dst.width), std::min(src.height, dst.height));
+    for (int i = 0; i < res.area(); ++i) {
+        const int y = i / res.width;
+        const int x = i % res.width;
+        res.pixels[i] = composePixels(
+            src.pixels[y * src.width + x], dst.pixels[y * dst.width + x],
+            compositionOperator);
     }
     return res;
 }
