@@ -1,6 +1,8 @@
 [requires]
 gtest/1.14.0
 stb/cci.20240531
+libpng/1.6.58
+libjpeg-turbo/3.1.4.1
 
 [generators]
 CMakeDeps
