@@ -12,7 +12,7 @@ namespace imp_io {
 
 enum class ChannelLayout : std::uint8_t { RGB = 3, RGBA = 4 };
 enum class StorageType { UInt8, UInt16, Float32 };
-enum class SampleDepth : std::uint8_t { Bits8 = 8, Bits10 = 10, Bits16 = 16, Bits32 = 32 };
+enum class SampleDepth : std::uint8_t { Bits8 = 8, Bits16 = 16, Bits32 = 32 };
 
 using SampleBuffer = std::variant<
     std::vector<std::uint8_t>,

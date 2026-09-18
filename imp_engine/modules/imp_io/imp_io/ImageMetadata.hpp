@@ -26,8 +26,6 @@ enum class RenderingIntent : std::uint8_t {
     AbsoluteColorimetric = 3
 };
 
-enum class ColorRange { Limited, Full };
-
 // Public value records let callers supply metadata without codec dependencies.
 struct Chromaticity {
     double x;
@@ -48,21 +46,11 @@ struct PngColorDescription {
     std::optional<RenderingIntent> srgbIntent;
 };
 
-struct NclxColorDescription {
-    // Preserve source CICP code points, including unfamiliar values. These do not
-    // change the RGB buffer layout or request a second YCbCr-to-RGB conversion.
-    std::uint16_t colorPrimaries;
-    std::uint16_t transferCharacteristics;
-    std::uint16_t matrixCoefficients;
-    ColorRange range;
-};
-
 struct ImageMetadata {
     // Absence is unknown, not an assumed identity transform or color space.
     std::optional<Orientation> orientation;
     std::optional<std::vector<std::uint8_t>> iccProfile;
     std::optional<PngColorDescription> pngColor;
-    std::optional<NclxColorDescription> nclxColor;
 };
 
 } // namespace imp_io

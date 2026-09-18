@@ -1,6 +1,5 @@
 #include "imp_io/DecodedImage.hpp"
 
-#include <algorithm>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
@@ -26,7 +25,7 @@ bool supportsDepth(StorageType storage, SampleDepth depth) {
         case StorageType::UInt8:
             return depth == SampleDepth::Bits8;
         case StorageType::UInt16:
-            return depth == SampleDepth::Bits10 || depth == SampleDepth::Bits16;
+            return depth == SampleDepth::Bits16;
         case StorageType::Float32:
             return depth == SampleDepth::Bits32;
     }
@@ -79,17 +78,6 @@ void DecodedImage::validate() const {
             throw std::invalid_argument("Decoded image sample count does not match dimensions/layout");
         }
     }, samples_);
-
-    // Ten-bit samples are unscaled, right-aligned integers, including alpha.
-    if (depth_ != SampleDepth::Bits10) {
-        return;
-    }
-
-    constexpr auto maxSample = (std::uint32_t{1} << static_cast<unsigned>(SampleDepth::Bits10)) - 1;
-    const auto& buffer = std::get<std::vector<std::uint16_t>>(samples_);
-    if (std::any_of(buffer.begin(), buffer.end(), [](auto value) { return value > maxSample; })) {
-        throw std::invalid_argument("Decoded image sample exceeds its meaningful bit depth");
-    }
 }
 
 } // namespace imp_io

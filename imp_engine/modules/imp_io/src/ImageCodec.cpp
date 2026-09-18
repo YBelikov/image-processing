@@ -25,8 +25,6 @@ bool supportsDepth(ImageFormat format, SampleDepth depth) {
             return depth == SampleDepth::Bits8 || depth == SampleDepth::Bits16;
         case ImageFormat::JPEG:
             return depth == SampleDepth::Bits8;
-        case ImageFormat::HEIC:
-            return depth == SampleDepth::Bits8 || depth == SampleDepth::Bits10;
     }
 
     return false;
@@ -111,15 +109,6 @@ std::optional<CodecError> validateMetadata(ImageFormat format, const ImageMetada
         return metadataError("PNG color descriptions require PNG output");
     }
 
-    if (metadata.nclxColor && format != ImageFormat::HEIC) {
-        return metadataError("NCLX color descriptions require HEIC output");
-    }
-
-    if (metadata.nclxColor && metadata.nclxColor->range != ColorRange::Limited
-        && metadata.nclxColor->range != ColorRange::Full) {
-        return metadataError("Invalid NCLX color range");
-    }
-
     return validatePngColor(metadata);
 }
 
@@ -129,7 +118,6 @@ ImageCodec::ImageCodec(ImageFormat format) : format_(format) {
     switch (format_) {
         case ImageFormat::PNG:
         case ImageFormat::JPEG:
-        case ImageFormat::HEIC:
             return;
     }
 
@@ -160,9 +148,9 @@ EncodeResult ImageCodec::encode(const std::filesystem::path& path, const Decoded
 
 EncodeResult ImageCodec::validateEncoding(const DecodedImage& image,
                                          const EncodeOptions& options) const {
-    if ((format_ == ImageFormat::JPEG || format_ == ImageFormat::HEIC)
+    if (format_ == ImageFormat::JPEG
         && (options.quality < minEncodeQuality || options.quality > maxEncodeQuality)) {
-        return CodecError{CodecErrorCode::InvalidArgument, "JPEG/HEIC quality must be between 1 and 100"};
+        return CodecError{CodecErrorCode::InvalidArgument, "JPEG quality must be between 1 and 100"};
     }
 
     if (format_ == ImageFormat::JPEG && image.layout() == ChannelLayout::RGBA) {

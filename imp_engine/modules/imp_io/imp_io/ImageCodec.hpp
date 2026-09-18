@@ -7,14 +7,14 @@
 
 namespace imp_io {
 
-enum class ImageFormat { PNG, JPEG, HEIC };
+enum class ImageFormat { PNG, JPEG };
 
 inline constexpr int defaultEncodeQuality = 90;
 inline constexpr int minEncodeQuality = 1;
 inline constexpr int maxEncodeQuality = 100;
 
 struct EncodeOptions {
-    // JPEG/HEIC only. PNG ignores quality. Depth always comes from the image.
+    // JPEG only. PNG ignores quality. Depth always comes from the image.
     int quality = defaultEncodeQuality;
 };
 

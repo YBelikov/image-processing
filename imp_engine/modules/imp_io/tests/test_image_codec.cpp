@@ -64,7 +64,6 @@ DecodedImage makeImage(SampleDepth depth, ChannelLayout layout, ImageMetadata me
     switch (depth) {
         case SampleDepth::Bits8:
             return {1, 1, layout, depth, std::vector<std::uint8_t>(count, 127), std::move(metadata)};
-        case SampleDepth::Bits10:
         case SampleDepth::Bits16:
             return {1, 1, layout, depth, std::vector<std::uint16_t>(count, 513), std::move(metadata)};
         case SampleDepth::Bits32:
@@ -112,11 +111,7 @@ TEST(ImageCodec, AcceptsSupportedInputs) {
         EncodingCase{ImageFormat::PNG, SampleDepth::Bits8, ChannelLayout::RGBA},
         EncodingCase{ImageFormat::PNG, SampleDepth::Bits16, ChannelLayout::RGB},
         EncodingCase{ImageFormat::PNG, SampleDepth::Bits16, ChannelLayout::RGBA},
-        EncodingCase{ImageFormat::JPEG, SampleDepth::Bits8, ChannelLayout::RGB},
-        EncodingCase{ImageFormat::HEIC, SampleDepth::Bits8, ChannelLayout::RGB},
-        EncodingCase{ImageFormat::HEIC, SampleDepth::Bits8, ChannelLayout::RGBA},
-        EncodingCase{ImageFormat::HEIC, SampleDepth::Bits10, ChannelLayout::RGB},
-        EncodingCase{ImageFormat::HEIC, SampleDepth::Bits10, ChannelLayout::RGBA}
+        EncodingCase{ImageFormat::JPEG, SampleDepth::Bits8, ChannelLayout::RGB}
     };
 
     for (const auto& entry : cases) {
@@ -134,13 +129,9 @@ TEST(ImageCodec, AcceptsSupportedInputs) {
 
 TEST(ImageCodec, RejectsPrecisionConversion) {
     const std::array cases{
-        EncodingCase{ImageFormat::PNG, SampleDepth::Bits10, ChannelLayout::RGB},
         EncodingCase{ImageFormat::PNG, SampleDepth::Bits32, ChannelLayout::RGBA},
-        EncodingCase{ImageFormat::JPEG, SampleDepth::Bits10, ChannelLayout::RGB},
         EncodingCase{ImageFormat::JPEG, SampleDepth::Bits16, ChannelLayout::RGB},
-        EncodingCase{ImageFormat::JPEG, SampleDepth::Bits32, ChannelLayout::RGB},
-        EncodingCase{ImageFormat::HEIC, SampleDepth::Bits16, ChannelLayout::RGBA},
-        EncodingCase{ImageFormat::HEIC, SampleDepth::Bits32, ChannelLayout::RGB}
+        EncodingCase{ImageFormat::JPEG, SampleDepth::Bits32, ChannelLayout::RGB}
     };
 
     for (const auto& entry : cases) {
@@ -161,18 +152,17 @@ TEST(ImageCodec, RejectsAlphaForJpeg) {
 TEST(ImageCodec, ValidatesLossyQuality) {
     constexpr int expectedDefaultQuality = 90;
     EXPECT_EQ(EncodeOptions{}.quality, expectedDefaultQuality);
-    for (const auto format : {ImageFormat::JPEG, ImageFormat::HEIC}) {
-        const ProbeCodec codec(format);
-        const auto image = makeImage(SampleDepth::Bits8, ChannelLayout::RGB);
-        for (const auto quality : {minEncodeQuality - 1, maxEncodeQuality + 1}) {
-            expectError(codec.encode("output.bin", image, {quality}), CodecErrorCode::InvalidArgument);
-        }
-        EXPECT_EQ(codec.encodeCalls(), 0u);
 
-        for (const auto quality : {minEncodeQuality, defaultEncodeQuality, maxEncodeQuality}) {
-            EXPECT_TRUE(std::holds_alternative<std::monostate>(codec.encode("output.bin", image, {quality})));
-            EXPECT_EQ(codec.quality(), quality);
-        }
+    const ProbeCodec codec(ImageFormat::JPEG);
+    const auto image = makeImage(SampleDepth::Bits8, ChannelLayout::RGB);
+    for (const auto quality : {minEncodeQuality - 1, maxEncodeQuality + 1}) {
+        expectError(codec.encode("output.bin", image, {quality}), CodecErrorCode::InvalidArgument);
+    }
+    EXPECT_EQ(codec.encodeCalls(), 0u);
+
+    for (const auto quality : {minEncodeQuality, defaultEncodeQuality, maxEncodeQuality}) {
+        EXPECT_TRUE(std::holds_alternative<std::monostate>(codec.encode("output.bin", image, {quality})));
+        EXPECT_EQ(codec.quality(), quality);
     }
 }
 
@@ -200,14 +190,14 @@ TEST(ImageCodec, RejectsInvalidPathsBeforeIo) {
 }
 
 TEST(ImageCodec, PreservesBackendErrors) {
-    constexpr auto diagnostic = "HEIC codec unavailable in this build";
-    const ProbeCodec codec(ImageFormat::HEIC, CodecError{CodecErrorCode::CodecUnavailable, diagnostic});
-    const auto image = makeImage(SampleDepth::Bits10, ChannelLayout::RGB);
-    const auto decoded = codec.decode("input.heic");
-    const auto encoded = codec.encode("output.heic", image);
+    constexpr auto diagnostic = "Cannot open the requested PNG file";
+    const ProbeCodec codec(ImageFormat::PNG, CodecError{CodecErrorCode::FileOpenFailed, diagnostic});
+    const auto image = makeImage(SampleDepth::Bits16, ChannelLayout::RGB);
+    const auto decoded = codec.decode("input.png");
+    const auto encoded = codec.encode("output.png", image);
 
-    expectError(decoded, CodecErrorCode::CodecUnavailable);
-    expectError(encoded, CodecErrorCode::CodecUnavailable);
+    expectError(decoded, CodecErrorCode::FileOpenFailed);
+    expectError(encoded, CodecErrorCode::FileOpenFailed);
     EXPECT_EQ(std::get<CodecError>(decoded).message, diagnostic);
     EXPECT_EQ(std::get<CodecError>(encoded).message, diagnostic);
 }
@@ -215,25 +205,11 @@ TEST(ImageCodec, PreservesBackendErrors) {
 TEST(ImageCodec, RejectsForeignMetadata) {
     ImageMetadata png;
     png.pngColor = PngColorDescription{};
-    ImageMetadata nclx;
-    constexpr std::uint16_t unspecifiedCodePoint = 2;
-    nclx.nclxColor = NclxColorDescription{
-        unspecifiedCodePoint, unspecifiedCodePoint, unspecifiedCodePoint, ColorRange::Full
-    };
 
-    for (const auto format : {ImageFormat::JPEG, ImageFormat::HEIC}) {
-        const ProbeCodec codec(format);
-        expectError(codec.encode("output.bin", makeImage(SampleDepth::Bits8, ChannelLayout::RGB, png)),
-                    CodecErrorCode::IncompatibleMetadata);
-        EXPECT_EQ(codec.encodeCalls(), 0u);
-    }
-
-    for (const auto format : {ImageFormat::PNG, ImageFormat::JPEG}) {
-        const ProbeCodec codec(format);
-        expectError(codec.encode("output.bin", makeImage(SampleDepth::Bits8, ChannelLayout::RGB, nclx)),
-                    CodecErrorCode::IncompatibleMetadata);
-        EXPECT_EQ(codec.encodeCalls(), 0u);
-    }
+    const ProbeCodec codec(ImageFormat::JPEG);
+    expectError(codec.encode("output.bin", makeImage(SampleDepth::Bits8, ChannelLayout::RGB, png)),
+                CodecErrorCode::IncompatibleMetadata);
+    EXPECT_EQ(codec.encodeCalls(), 0u);
 }
 
 TEST(ImageCodec, RejectsMalformedMetadata) {
@@ -300,31 +276,12 @@ TEST(ImageCodec, PassesSupportedColorMetadata) {
     ImageMetadata icc;
     icc.iccProfile = std::vector<std::uint8_t>{1, 2, 3};
     icc.orientation = Orientation::MirrorHorizontal;
-    for (const auto format : {ImageFormat::PNG, ImageFormat::JPEG, ImageFormat::HEIC}) {
+    for (const auto format : {ImageFormat::PNG, ImageFormat::JPEG}) {
         const ProbeCodec codec(format);
         const auto image = makeImage(SampleDepth::Bits8, ChannelLayout::RGB, icc);
         EXPECT_TRUE(std::holds_alternative<std::monostate>(codec.encode("output.bin", image)));
         EXPECT_EQ(codec.input(), &image);
     }
-
-    constexpr std::uint16_t unknownCodePoint = 65000;
-    icc.nclxColor = NclxColorDescription{
-        unknownCodePoint, unknownCodePoint, unknownCodePoint, ColorRange::Limited
-    };
-    const ProbeCodec heic(ImageFormat::HEIC);
-    const auto image = makeImage(SampleDepth::Bits10, ChannelLayout::RGBA, icc);
-    EXPECT_TRUE(std::holds_alternative<std::monostate>(heic.encode("output.heic", image)));
-    EXPECT_EQ(heic.input(), &image);
-}
-
-TEST(ImageCodec, RejectsInvalidNclxRange) {
-    ImageMetadata metadata;
-    metadata.nclxColor = NclxColorDescription{};
-    metadata.nclxColor->range = static_cast<ColorRange>(255);
-    const ProbeCodec codec(ImageFormat::HEIC);
-    expectError(codec.encode("output.heic", makeImage(SampleDepth::Bits10, ChannelLayout::RGB, metadata)),
-                CodecErrorCode::IncompatibleMetadata);
-    EXPECT_EQ(codec.encodeCalls(), 0u);
 }
 
 TEST(ImageCodec, RejectsUnknownCodecFormat) {

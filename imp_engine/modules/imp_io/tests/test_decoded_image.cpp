@@ -12,7 +12,6 @@ using namespace imp_io;
 namespace {
 
 constexpr std::array layouts{ChannelLayout::RGB, ChannelLayout::RGBA};
-constexpr auto maxTenBitSample = (std::uint16_t{1} << static_cast<unsigned>(SampleDepth::Bits10)) - 1;
 
 template<typename T>
 void checkSamples(SampleDepth depth, StorageType storage, const std::vector<T>& values) {
@@ -39,8 +38,6 @@ void checkSamples(SampleDepth depth, StorageType storage, const std::vector<T>& 
 TEST(DecodedImage, PreservesSupportedSamples) {
     checkSamples<std::uint8_t>(SampleDepth::Bits8, StorageType::UInt8,
                               {0, 17, 128, std::numeric_limits<std::uint8_t>::max()});
-    checkSamples<std::uint16_t>(SampleDepth::Bits10, StorageType::UInt16,
-                               {0, 257, 513, maxTenBitSample});
     checkSamples<std::uint16_t>(SampleDepth::Bits16, StorageType::UInt16,
                                {0, 257, 32769, std::numeric_limits<std::uint16_t>::max()});
     checkSamples<float>(SampleDepth::Bits32, StorageType::Float32, {-0.5f, 0.0f, 0.25f, 12.5f});
@@ -60,13 +57,13 @@ TEST(DecodedImage, OwnsSamplesAndCopies) {
 }
 
 TEST(DecodedImage, AcceptsMovedSamples) {
-    std::vector<std::uint16_t> source{0, 513, maxTenBitSample};
+    std::vector<std::uint16_t> source{0, 513, std::numeric_limits<std::uint16_t>::max()};
     const auto expected = source;
-    DecodedImage image(1, 1, ChannelLayout::RGB, SampleDepth::Bits10, std::move(source));
+    DecodedImage image(1, 1, ChannelLayout::RGB, SampleDepth::Bits16, std::move(source));
     const auto moved = std::move(image);
 
     EXPECT_EQ(std::get<std::vector<std::uint16_t>>(moved.samples()), expected);
-    EXPECT_EQ(moved.bitDepth(), SampleDepth::Bits10);
+    EXPECT_EQ(moved.bitDepth(), SampleDepth::Bits16);
 }
 
 TEST(DecodedImage, LeavesUnknownMetadataAbsent) {
@@ -76,12 +73,10 @@ TEST(DecodedImage, LeavesUnknownMetadataAbsent) {
     EXPECT_FALSE(image.metadata().orientation.has_value());
     EXPECT_FALSE(image.metadata().iccProfile.has_value());
     EXPECT_FALSE(image.metadata().pngColor.has_value());
-    EXPECT_FALSE(image.metadata().nclxColor.has_value());
 }
 
 TEST(DecodedImage, OwnsMetadataWithoutTransforms) {
     constexpr double imageGamma = 0.45455;
-    constexpr std::uint16_t unknownCodePoint = 65000;
     ImageMetadata metadata;
     metadata.orientation = Orientation::Rotate90Clockwise;
     metadata.iccProfile = std::vector<std::uint8_t>{1, 2, 3, 4};
@@ -89,9 +84,6 @@ TEST(DecodedImage, OwnsMetadataWithoutTransforms) {
         imageGamma,
         Chromaticities{{0.3127, 0.3290}, {0.64, 0.33}, {0.30, 0.60}, {0.15, 0.06}},
         RenderingIntent::RelativeColorimetric
-    };
-    metadata.nclxColor = NclxColorDescription{
-        unknownCodePoint, unknownCodePoint, unknownCodePoint, ColorRange::Limited
     };
     const std::vector<std::uint8_t> samples{1, 2, 3, 4, 5, 6};
     const DecodedImage image(2, 1, ChannelLayout::RGB, SampleDepth::Bits8, samples, metadata);
@@ -112,11 +104,6 @@ TEST(DecodedImage, OwnsMetadataWithoutTransforms) {
     EXPECT_DOUBLE_EQ(stored.pngColor->chromaticities->red.y, 0.33);
     EXPECT_DOUBLE_EQ(stored.pngColor->chromaticities->green.y, 0.60);
     EXPECT_DOUBLE_EQ(stored.pngColor->chromaticities->blue.y, 0.06);
-    ASSERT_TRUE(stored.nclxColor.has_value());
-    EXPECT_EQ(stored.nclxColor->colorPrimaries, unknownCodePoint);
-    EXPECT_EQ(stored.nclxColor->transferCharacteristics, unknownCodePoint);
-    EXPECT_EQ(stored.nclxColor->matrixCoefficients, unknownCodePoint);
-    EXPECT_EQ(stored.nclxColor->range, ColorRange::Limited);
 }
 
 TEST(DecodedImage, RejectsZeroDimensions) {
@@ -148,15 +135,15 @@ TEST(DecodedImage, RejectsUnsupportedDepths) {
         std::vector<SampleDepth> depths;
     };
     constexpr auto zeroDepth = static_cast<SampleDepth>(0);
-    constexpr auto unsupportedDepth = static_cast<SampleDepth>(12);
+    constexpr auto unsupportedDepth = static_cast<SampleDepth>(10);
     const std::array cases{
         InvalidDepths{std::vector<std::uint8_t>(3),
-                      {SampleDepth::Bits10, SampleDepth::Bits16, SampleDepth::Bits32,
+                      {SampleDepth::Bits16, SampleDepth::Bits32,
                        zeroDepth, unsupportedDepth}},
         InvalidDepths{std::vector<std::uint16_t>(3),
                       {SampleDepth::Bits8, SampleDepth::Bits32, zeroDepth, unsupportedDepth}},
         InvalidDepths{std::vector<float>(3),
-                      {SampleDepth::Bits8, SampleDepth::Bits10, SampleDepth::Bits16,
+                      {SampleDepth::Bits8, SampleDepth::Bits16,
                        zeroDepth, unsupportedDepth}}
     };
 
@@ -166,12 +153,6 @@ TEST(DecodedImage, RejectsUnsupportedDepths) {
                          std::invalid_argument);
         }
     }
-}
-
-TEST(DecodedImage, RejectsOutOfRangeTenBitAlpha) {
-    EXPECT_THROW(DecodedImage(1, 1, ChannelLayout::RGBA, SampleDepth::Bits10,
-                              std::vector<std::uint16_t>{0, 1, 2, maxTenBitSample + 1}),
-                 std::invalid_argument);
 }
 
 TEST(DecodedImage, RejectsPixelCountOverflow) {
