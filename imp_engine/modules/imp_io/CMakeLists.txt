@@ -5,6 +5,7 @@ set(IMP_IO_HEADERS
     imp_io/DecodedImage.hpp
     imp_io/ImageCodec.hpp
     imp_io/ImageData.hpp
+    imp_io/ImageFormat.hpp
     imp_io/ImageMetadata.hpp
     imp_io/ImageReader.hpp
     imp_io/ImageWriter.hpp

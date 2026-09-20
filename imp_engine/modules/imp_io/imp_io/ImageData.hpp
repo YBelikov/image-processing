@@ -8,10 +8,13 @@
 #ifndef ImageData_hpp
 #define ImageData_hpp
 
-#include "Pixel.hpp"
+#include "imp_io/DecodedImage.hpp"
+#include "imp_io/ImageFormat.hpp"
+#include "imp_io/Pixel.hpp"
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 namespace imp_io {
@@ -29,13 +32,16 @@ public:
     ImageData(int _width, int _height) : width{_width}, height{_height}, channels{PixelChannels<T>::value} {
         pixels.resize(static_cast<std::size_t>(width) * height);
     }
-    
+
 // data
 public:
     int width = 0;
     int height = 0;
     int channels = 0;
     std::vector<T> pixels;
+    std::optional<ImageFormat> sourceFormat;
+    std::optional<SampleDepth> sourceDepth;
+    ImageMetadata metadata;
 };
 
 using ImageDataRGB = ImageData<PixelRGB_F>;

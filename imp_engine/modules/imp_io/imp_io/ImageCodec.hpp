@@ -2,12 +2,11 @@
 #define IMP_IO_IMAGE_CODEC_HPP
 
 #include "imp_io/CodecResult.hpp"
+#include "imp_io/ImageFormat.hpp"
 
 #include <filesystem>
 
 namespace imp_io {
-
-enum class ImageFormat { PNG, JPEG };
 
 inline constexpr int defaultEncodeQuality = 90;
 inline constexpr int minEncodeQuality = 1;

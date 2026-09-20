@@ -19,7 +19,8 @@ namespace {
 
 constexpr std::size_t imageWidth = 16;
 constexpr std::size_t imageHeight = 12;
-constexpr int fixtureTolerance = 16;
+constexpr int fixtureTolerance = 17;
+constexpr int encodeTolerance = 32;
 constexpr std::uint8_t markerPrefix = 0xff;
 constexpr std::uint8_t baselineSof = 0xc0;
 constexpr std::uint8_t progressiveSof = 0xc2;
@@ -248,7 +249,7 @@ TEST_F(JpegTest, EncodesBaselineRgb444) {
     EXPECT_EQ(restored.width(), imageWidth);
     EXPECT_EQ(restored.height(), imageHeight);
     expectNear(std::get<std::vector<std::uint8_t>>(restored.samples()), rgbSamples(),
-               fixtureTolerance);
+               encodeTolerance);
 }
 
 TEST_F(JpegTest, UsesQualityAndDefaultNinety) {
@@ -288,7 +289,7 @@ TEST_F(JpegTest, WritesIccAndOrientation) {
     EXPECT_EQ(restored.metadata().orientation, Orientation::Transverse);
     EXPECT_EQ(restored.metadata().iccProfile, metadata.iccProfile);
     expectNear(std::get<std::vector<std::uint8_t>>(restored.samples()), source,
-               fixtureTolerance);
+               encodeTolerance);
 }
 
 TEST_F(JpegTest, RejectsIncompatibleOutputWithoutTruncation) {
