@@ -10,6 +10,8 @@
 
 #include "imp_io/ImageData.hpp"
 #include "imp_io/PngCodec.hpp"
+#include "imp_io/Common.hpp"
+
 #include "stb_image_write.h"
 
 #include <algorithm>
@@ -28,11 +30,10 @@ namespace imp_io {
 
 template <typename PixelType> class ImageWriter {
   public:
-
     /// Writes sourced PNG data to PNG, or unsourced float data to HDR.
     /// Returns true on success.
     [[nodiscard("Always check the write status")]]
-    bool write(const ImageData<PixelType>& image, std::string_view path) const {
+    bool write(ImageData<PixelType>& image, std::string_view path) const {
         if (!valid(image)) {
             return false;
         }
@@ -42,6 +43,7 @@ template <typename PixelType> class ImageWriter {
             if (extension != ".png") {
                 return false;
             }
+            convertToColorProfile(ColorSpace::sRGB, image);
             return writePng(image, path);
         }
         if (image.sourceFormat) {

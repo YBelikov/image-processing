@@ -33,7 +33,7 @@ PixelRGBA_F composePixels(const PixelRGBA_F& src, const PixelRGBA_F& dst, Porter
         res.r = top.r + (1 - top.a) * bottom.r;
         res.g = top.g + (1 - top.a) * bottom.g;
         res.b = top.b + (1 - top.a) * bottom.b;
-        res.a = (1 - top.a) * bottom.a; 
+        res.a = top.a + (1 - top.a) * bottom.a; 
         return res;
     };
 
@@ -68,8 +68,9 @@ PixelRGBA_F composePixels(const PixelRGBA_F& src, const PixelRGBA_F& dst, Porter
         PixelRGBA_F res;
         res.r = (1 - bottom.a) * top.r + (1 - top.a) * bottom.r;
         res.g = (1 - bottom.a) * top.g + (1 - top.a) * bottom.g;
-        res.r = (1 - bottom.a) * top.b + (1 - top.a) * bottom.b;
+        res.b = (1 - bottom.a) * top.b + (1 - top.a) * bottom.b;
         res.a = (1 - bottom.a) * top.a + (1 - top.a) * bottom.a;
+        return res;
     };
 
     switch (compositionOperator) {

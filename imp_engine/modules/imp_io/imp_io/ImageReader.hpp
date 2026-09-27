@@ -18,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include "imp_io/Common.hpp"
 
 namespace imp_io {
 
@@ -31,14 +32,18 @@ public:
         const PngCodec png;
         auto decoded = png.decode(pathString);
         if (const auto* image = std::get_if<DecodedImage>(&decoded)) {
-            return fromPng(*image);
+            auto pngDecodedRes = fromPng(*image);
+            if (!pngDecodedRes.has_value()) {
+                return std::nullopt;
+            }
+            auto res = pngDecodedRes.value();
+            convertToColorProfile(ColorSpace::LinearRGB, res);
+            return res;
         }
-
         const auto& error = std::get<CodecError>(decoded);
         if (error.code != CodecErrorCode::UnsupportedFormat) {
             return std::nullopt;
         }
-
         return readFloat(pathString);
     }
 
